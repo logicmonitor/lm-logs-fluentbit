@@ -1,0 +1,9 @@
+# Default ignored files
+/shelf/
+/.idea/lm-logs-fluentbit.iml
+/misc.xml
+/modules.xml
+/vcs.xml
+/workspace.xml
+.DS_Store
+*.xml
