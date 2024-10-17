@@ -34,16 +34,18 @@ Create a custom `fluent-bit.conf` or edit the existing one to specify which logs
     lm_debug <boolean_value>
 ```
 
+For more configuration examples, please refer to the examples folder, or see the [Fluentbit configuration documentation](https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/configuration-file)
+
 ### Request example
 
 Sending:
 
-`curl -X POST -d 'json={"message":"hello LogicMonitor from fluentd", "event_key":"lm_property_value"}' http://localhost:8888/lm.test`
+`curl -X POST -d 'json={"message":"hello LogicMonitor from fluentbit", "event_key":"lm_property_value"}' http://localhost:8888/lm.test`
 
 Produces this event:
 ```
 {
-    "message": "hello LogicMonitor from fluentd"
+    "message": "hello LogicMonitor from fluentbit"
 }
 ```
 
