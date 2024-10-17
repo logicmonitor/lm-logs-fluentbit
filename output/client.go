@@ -142,29 +142,29 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 
   //Check if message or log is present in the log else return error
 	message, ok := jsonMap["message"].(string)
-  if !ok {
-        logger.Log("Cannot convert message to string")
-        message, ok = jsonMap["log"].(string)
-        if !ok {
-            logger.Log("No message or log field in the record")
-        } else {
-            logger.Debug(fmt.Sprintf("Log field found: %s", message))
-        }
-  } else {
-        logger.Debug(fmt.Sprintf("Message field found: %s", message))
-  }
+	if !ok {
+		logger.Log("Cannot convert message to string")
+		message, ok = jsonMap["log"].(string)
+		if !ok {
+			logger.Log("No message or log field in the record")
+		} else {
+			logger.Debug(fmt.Sprintf("Log field found: %s", message))
+		}
+	} else {
+		logger.Debug(fmt.Sprintf("Message field found: %s", message))
+	}
 
   //Send logs only if message is not empty
-  if message != "" {
-      logs := model.LogInput{
-      Message:    message,
-      Timestamp: jsonMap["timestamp"].(string),
-      ResourceID: resourceMap,
-      Metadata: metadata,
-    }
-    logger.Debug(fmt.Sprintf("adding log to the bulk: %+v\n", logs))
-    logicmonitorClient.bulk = append(logicmonitorClient.bulk, logs)
-  }
+	if message != "" {
+		logs := model.LogInput{
+		Message:    message,
+		Timestamp: jsonMap["timestamp"].(string),
+		ResourceID: resourceMap,
+		Metadata: metadata,
+		}
+		logger.Debug(fmt.Sprintf("adding log to the bulk: %+v\n", logs))
+		logicmonitorClient.bulk = append(logicmonitorClient.bulk, logs)
+	}
 	return output.FLB_OK
 	
 }
@@ -188,7 +188,7 @@ func (logicmonitorClient *LogicmonitorClient) sendBulk(logIngestor *logs.LMLogIn
 		return output.FLB_OK
 	}
 
-	fmt.Println("Sending bulk of length ", len(logicmonitorClient.bulk))
+	logger.Log(fmt.Sprintf("Sending bulk of length %s", len(logicmonitorClient.bulk)))
 	ingestResponse, err := logIngestor.SendLogs(context.Background(), logicmonitorClient.bulk)
 	if(err != nil){
 		logger.Log(fmt.Sprintf("Error in sending logs to LM : %s",err))

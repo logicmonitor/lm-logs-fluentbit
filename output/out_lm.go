@@ -299,7 +299,7 @@ func formatTimestamp(ts interface{}) time.Time {
 		ts = s.Index(0).Interface() // First item is the timestamp.
 		timestamp = formatTimestamp(ts)
 	default:
-		fmt.Printf("Unknown format, defaulting to now, timestamp: %v of type: %T.\n", t, t)
+		logger.Log(fmt.Sprintf("Unknown format, defaulting to now, timestamp: %v of type: %T.\n", t, t))
 		timestamp = time.Now()
 	}
 	return timestamp
