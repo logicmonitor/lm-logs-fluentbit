@@ -19,7 +19,7 @@ jobs:
       run: |
         echo "Building Fluent Bit plugins..."
         docker build -t lm-logs-fluentbit .
-        docker run --rm -v $PWD:/build fluent-bit-plugin-builder \
+        docker run --rm -v $PWD:/build lm-logs-fluentbit \
           cp -r /go/src/lm/build /build/
 
     # Step 3: Upload generated .so files as artifacts
