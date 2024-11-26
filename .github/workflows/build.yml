@@ -23,7 +23,7 @@ jobs:
           bash -c "mkdir -p /build/plugins && cp -r /go/src/lm/build/*.so /build/plugins/"
 
     # Step 3: Debug to list files
-    - name: Debug: List workspace files
+    - name: Debug List workspace files
       run: |
         echo "Workspace file structure:"
         ls -R
