@@ -20,24 +20,35 @@ jobs:
         echo "Building Fluent Bit plugins..."
         docker build -t lm-logs-fluentbit .
         docker run --rm -v $PWD:/build lm-logs-fluentbit \
-          cp -r /go/src/lm/build /build/
+          bash -c "mkdir -p /build/plugins && cp -r /go/src/lm/build/*.so /build/plugins/"
 
-    # Step 3: Upload generated .so files as artifacts
+    # Step 3: Debug to list files
+    - name: Debug: List workspace files
+      run: |
+        echo "Workspace file structure:"
+        ls -R
+
+    # Step 4: Upload generated .so files as artifacts
     - name: Upload .so files
       uses: actions/upload-artifact@v3
       with:
         name: fluent-bit-plugins
-        path: plugins/*.so
+        path: plugins/**/*.so
 
-    # Optional Step 4: Commit the .so files back to the repository
+    # Optional Step 5: Commit the .so files back to the repository
     - name: Commit and Push Generated .so Files
-      if: github.ref != 'refs/heads/main' # Optionally skip committing to the main branch
+      if: success() && github.ref != 'refs/heads/main' # Skip committing to the main branch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "Committing generated .so files..."
-        git config user.name "GitHub Actions Bot"
-        git config user.email "actions@github.com"
-        git add plugins/*.so
-        git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
-        git push
+        echo "Checking for .so files..."
+        if ls plugins/*.so 1> /dev/null 2>&1; then
+          echo "Committing generated .so files..."
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add plugins/*.so
+          git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
+          git push
+        else
+          echo "No .so files found. Skipping commit."
+        fi
