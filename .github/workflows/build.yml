@@ -37,17 +37,22 @@ jobs:
 
     # Optional Step 5: Commit the .so files back to the repository
     - name: Commit and Push Generated .so Files
-      if: success() && github.ref != 'refs/heads/main' # Skip committing to the main branch
+      if: success() && github.ref != 'refs/heads/main'  # Skip committing to the main branch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "Checking for .so files..."
         if ls plugins/*.so 1> /dev/null 2>&1; then
-          echo "Committing generated .so files..."
+          echo "Pulling latest changes..."
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
+          git pull --rebase origin ${{ github.ref_name }}
+          
+          echo "Committing generated .so files..."
           git add plugins/*.so
           git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
+          
+          echo "Pushing changes to the remote repository..."
           git push
         else
           echo "No .so files found. Skipping commit."
