@@ -43,17 +43,24 @@ jobs:
       run: |
         echo "Checking for .so files..."
         if ls plugins/*.so 1> /dev/null 2>&1; then
-          echo "Pulling latest changes..."
+          echo "Stashing local changes..."
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
+          git stash
+
+          echo "Pulling latest changes..."
           git pull --rebase origin ${{ github.ref_name }}
-          
+
+          echo "Applying stashed changes..."
+          git stash pop
+
           echo "Committing generated .so files..."
           git add plugins/*.so
           git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
-          
+
           echo "Pushing changes to the remote repository..."
           git push
         else
           echo "No .so files found. Skipping commit."
         fi
+
