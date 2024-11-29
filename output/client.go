@@ -144,7 +144,6 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 	message, ok := jsonMap["message"].(string)
 	if !ok {
 		logger.Log("Cannot convert message to string")
-		logger.Log("Githubactions updated the .so file")
 		message, ok = jsonMap["log"].(string)
 		if !ok {
 			logger.Log("No message or log field in the record")
