@@ -30,6 +30,8 @@ type LogicmonitorClient struct {
 	resourceMapping		string
 	bulk                 []model.LogInput
 	includeMetadata bool
+	logSource string
+	versionId string
 	logger               *Logger
 	sizeThresholdInBytes int
 }
@@ -38,7 +40,7 @@ type LogicmonitorClient struct {
 type ClientOptionFunc func(*LogicmonitorClient) error
 
 // NewClient is a constructor for Logicmonitor http client
-func NewClient( lmCompanyName string, accessID string, accessKey string, bearerToken string, useBearerTokenforAuth bool, resourceMapping string, includeMetadata bool, logger *Logger ) (*LogicmonitorClient) {
+func NewClient( lmCompanyName string, accessID string, accessKey string, bearerToken string, useBearerTokenforAuth bool, resourceMapping string, includeMetadata bool, logSource string, versionId string, logger *Logger ) (*LogicmonitorClient) {
 	
 	logicmonitorClient := &LogicmonitorClient{
 		lmCompanyName:          lmCompanyName,
@@ -49,6 +51,8 @@ func NewClient( lmCompanyName string, accessID string, accessKey string, bearerT
 		resourceMapping:		resourceMapping,
 		bulk: nil,
 		includeMetadata: includeMetadata,
+		logSource: logSource,
+		versionId: versionId,
 		logger: logger,
 		sizeThresholdInBytes: maxRequestBodySizeInBytes,
 	}
@@ -64,11 +68,12 @@ func NewLogIngester(logicmonitorClient *LogicmonitorClient) (*logs.LMLogIngest){
 		BearerToken:          logicmonitorClient.bearerToken}
 
 	companyName := logicmonitorClient.lmCompanyName
+	userAgent := fmt.Sprintf("%s/%s", logicmonitorClient.logSource, logicmonitorClient.versionId)
 	options := []logs.Option{
 		logs.WithLogBatchingDisabled(),
 		logs.WithAuthentication(auth),
 		logs.WithEndpoint("https://"+companyName+"/rest"),
-		logs.WithUserAgent("lm-logs-fluentbit"),
+		logs.WithUserAgent(userAgent),
 	}
 
 	lmLog, err := logs.NewLMLogIngest(context.Background(), options...)
@@ -128,15 +133,14 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 
 	for k, v := range resourceMapReceived {
 		if(k != ""){
-			resourceMap[v] = jsonMap[k]
+			resourceMap[k] = v
 		}
-	
 	}
 	if (jsonMap["host"].(string) != "" && len(resourceMap)==0){
 		resourceMap["system.hostname"] = jsonMap["host"]
 	}
-
-	if(logicmonitorClient.includeMetadata){
+	logger.Debug(fmt.Sprintf("include metadata: %s",logicmonitorClient.includeMetadata))
+  if(logicmonitorClient.includeMetadata){
 		metadata = getMetadata(jsonMap)
 	}
 
