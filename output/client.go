@@ -138,7 +138,7 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 	if (jsonMap["host"].(string) != "" && len(resourceMap)==0){
 		resourceMap["system.hostname"] = jsonMap["host"]
 	}
-
+  logger.Log(fmt.Sprintf("resourceMap 1 %s",resourceMap))
 	if(logicmonitorClient.includeMetadata){
 		metadata = getMetadata(jsonMap)
 	}
