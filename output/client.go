@@ -132,7 +132,7 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 
 	for k, v := range resourceMapReceived {
 		if(k != ""){
-			resourceMap[v] = resourceMapReceived[k]
+			resourceMap[v] = resourceMap[k]
 		}
 	}
 	if (jsonMap["host"].(string) != "" && len(resourceMap)==0){
