@@ -126,11 +126,14 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 		logger.Log(fmt.Sprintf("err for unmarshal resourceMapStr %s",err))
 	 }
 
+  logger.Log(fmt.Sprintf("jsonMap %s",jsonMap))
+  logger.Log(fmt.Sprintf("resourceMap %s",resourceMap))
+  logger.Log(fmt.Sprintf("resourceMapReceived %s",resourceMapReceived))
+
 	for k, v := range resourceMapReceived {
 		if(k != ""){
 			resourceMap[v] = jsonMap[k]
 		}
-	
 	}
 	if (jsonMap["host"].(string) != "" && len(resourceMap)==0){
 		resourceMap["system.hostname"] = jsonMap["host"]
