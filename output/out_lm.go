@@ -196,16 +196,28 @@ func initConfigParams(ctx unsafe.Pointer) error {
 	accessKey := output.FLBPluginConfigKey(ctx, "accessKey")
 	accessID := output.FLBPluginConfigKey(ctx, "accessID")
 
-	useBearerTokenforAuth := true
-	if (accessID == "" || accessKey == "") {
-		logger.Log("accessID or accessKey is empty. Using bearer Token for authentication")
-		useBearerTokenforAuth = false
-	}
-	bearerToken := output.FLBPluginConfigKey(ctx, "bearerToken")
+	useBearerTokenforAuth := false
+    if accessID == "" || accessKey == "" {
+     logger.Log("accessID or accessKey is empty. Using bearer Token for authentication")
+     useBearerTokenforAuth = true
+    }
+    bearerToken := output.FLBPluginConfigKey(ctx, "bearerToken")
 
-	if(bearerToken == "" && useBearerTokenforAuth){
-		return fmt.Errorf("Bearer token not specified. Either access_id and access_key both or bearer_token must be specified for authentication with Logicmonitor.")
-	}
+    if accessID == "" || accessKey == "" {
+     if bearerToken == "" {
+      return fmt.Errorf("Bearer token not specified. Either access_id and access_key both or bearer_token must be specified for authentication with Logicmonitor.")
+     }
+    }
+// 	useBearerTokenforAuth := true
+// 	if (accessID == "" || accessKey == "") {
+// 		logger.Log("accessID or accessKey is empty. Using bearer Token for authentication")
+// 		useBearerTokenforAuth = false
+// 	}
+// 	bearerToken := output.FLBPluginConfigKey(ctx, "bearerToken")
+//
+// 	if(bearerToken == "" && useBearerTokenforAuth){
+// 		return fmt.Errorf("Bearer token not specified. Either access_id and access_key both or bearer_token must be specified for authentication with Logicmonitor.")
+// 	}
 
 	resourceMapping := output.FLBPluginConfigKey(ctx, "resourceMapping")
 
