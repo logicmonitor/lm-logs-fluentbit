@@ -131,6 +131,7 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
   logger.Log(fmt.Sprintf("resourceMapReceived %s",resourceMapReceived))
 
 	for k, v := range resourceMapReceived {
+	  logger.Log(fmt.Sprintf("key %s  value %s",k,v))
 		if(k != ""){
 			resourceMap[v] = resourceMap[k]
 		}
