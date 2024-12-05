@@ -133,7 +133,7 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 	for k, v := range resourceMapReceived {
 	  logger.Log(fmt.Sprintf("key %s  value %s",k,v))
 		if(k != ""){
-			resourceMap[v] = resourceMap[k]
+			resourceMap[k] = resourceMap[v]
 		}
 	}
 	if (jsonMap["host"].(string) != "" && len(resourceMap)==0){
