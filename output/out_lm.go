@@ -6,15 +6,15 @@ package main
 import (
 	"C"
 	"fmt"
-	"github.com/fluent/fluent-bit-go/output"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/logicmonitor/lm-data-sdk-go/api/logs"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
 	"unsafe"
 
+	"github.com/fluent/fluent-bit-go/output"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/logicmonitor/lm-data-sdk-go/api/logs"
 )
 
 const (
@@ -28,11 +28,11 @@ var (
 )
 
 type LogicmonitorOutput struct {
-	plugin            Plugin
-	logger            *Logger
-	client            *LogicmonitorClient
-	logIngestor       *logs.LMLogIngest
-	id                string
+	plugin      Plugin
+	logger      *Logger
+	client      *LogicmonitorClient
+	logIngestor *logs.LMLogIngest
+	id          string
 }
 
 var (
@@ -145,7 +145,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 			break
 		}
 
-		log, err := serializeRecord(ts, C.GoString(tag), record,id)
+		log, err := serializeRecord(ts, C.GoString(tag), record, id)
 		if err != nil {
 			continue
 		}
@@ -160,12 +160,12 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 //
 //export FLBPluginExit
 func FLBPluginExit() int {
-	plugin.Flush(nil,nil)
+	plugin.Flush(nil, nil)
 	return output.FLB_OK
 }
 
 func initConfigParams(ctx unsafe.Pointer) error {
-	debug, err := strconv.ParseBool(output.FLBPluginConfigKey(ctx, "lm_debug"))
+	debug, err := strconv.ParseBool(output.FLBPluginConfigKey(ctx, "lmDebug"))
 	if err != nil {
 		debug = false
 	}
@@ -186,38 +186,47 @@ func initConfigParams(ctx unsafe.Pointer) error {
 	}
 
 	logger = NewLogger(outputName+"_"+outputId, debug)
-	
 
 	lmCompanyName := output.FLBPluginConfigKey(ctx, "lmCompanyName")
 	if lmCompanyName == "" {
-	  return fmt.Errorf("LM Company name is not specified. Please specify the company name in the configuration")
+		return fmt.Errorf("LM Company name is not specified. Please specify the company name in the configuration")
 	}
 
 	accessKey := output.FLBPluginConfigKey(ctx, "accessKey")
 	accessID := output.FLBPluginConfigKey(ctx, "accessID")
 
-	useBearerTokenforAuth := true
-	if (accessID == "" || accessKey == "") {
+	useBearerTokenforAuth := false
+	if accessID == "" || accessKey == "" {
 		logger.Log("accessID or accessKey is empty. Using bearer Token for authentication")
-		useBearerTokenforAuth = false
+		useBearerTokenforAuth = true
 	}
 	bearerToken := output.FLBPluginConfigKey(ctx, "bearerToken")
 
-	if(bearerToken == "" && useBearerTokenforAuth){
-		return fmt.Errorf("Bearer token not specified. Either access_id and access_key both or bearer_token must be specified for authentication with Logicmonitor.")
+	if accessID == "" || accessKey == "" {
+		if bearerToken == "" {
+			return fmt.Errorf("Bearer token not specified. Either access_id and access_key both or bearer_token must be specified for authentication with Logicmonitor.")
+		}
 	}
 
 	resourceMapping := output.FLBPluginConfigKey(ctx, "resourceMapping")
 
-	includeMetadata, err := strconv.ParseBool(output.FLBPluginConfigKey(ctx, "include_metadata"))
+	includeMetadata, err := strconv.ParseBool(output.FLBPluginConfigKey(ctx, "includeMetadata"))
+	logSource := output.FLBPluginConfigKey(ctx, "logSource")
+  if logSource == "" {
+      logSource = "lm-logs-fluentbit"
+  }
+	versionId := output.FLBPluginConfigKey(ctx, "versionId")
+  if versionId == "" {
+      versionId = "1.0.0"
+  }
 
-	client := NewClient(lmCompanyName ,accessID , accessKey, bearerToken, useBearerTokenforAuth, resourceMapping, includeMetadata, logger)
+	client := NewClient(lmCompanyName, accessID, accessKey, bearerToken, useBearerTokenforAuth, resourceMapping, includeMetadata, logSource, versionId, logger)
 	logIngestor := NewLogIngester(client)
 	outputs[outputId] = LogicmonitorOutput{
-		logger:            logger,
-		client:            client,
-		logIngestor:       logIngestor,
-		id:                outputId,
+		logger:      logger,
+		client:      client,
+		logIngestor: logIngestor,
+		id:          outputId,
 	}
 
 	return nil
@@ -238,6 +247,7 @@ func serializeRecord(ts interface{}, tag string, record map[interface{}]interfac
 
 	body["timestamp"] = formatTimestamp(ts)
 	body["fluentbit_tag"] = tag
+	body["_resource.type"] = "Fluentbit"
 
 	serialized, err := jsoniter.Marshal(body)
 	if err != nil {
