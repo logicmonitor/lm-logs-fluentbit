@@ -28,10 +28,10 @@ Create a custom `fluent-bit.conf` or edit the existing one to specify which logs
     Workers 1
     accessKey <access_key>
     accessID <access_ID>
-    bearerToken <bearer_token>
+    bearerToken Bearer <bearer_token>
     resourceMapping {"<event_key>": "<lm_property>"}
-    include_metadata <boolean_value>
-    lm_debug <boolean_value>
+    includeMetadata <boolean_value>
+    lmDebug <boolean_value>
 ```
 
 For more configuration examples, please refer to the examples folder, or see the [Fluentbit configuration documentation](https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/configuration-file)
@@ -59,17 +59,17 @@ Produces this event:
 
 ## LogicMonitor properties
 
-| Property           | Description                                                                                                                                                                                            |
-|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Name`             | Name of the input plugin.                                                                                                                                                                              |
-| `lmCompanyName`    | LogicMonitor account name with domain. For example, test.logicmonitor.com .                                                                                                                            |
-| `Match`            | A pattern to match against the tags of incoming records. For example, * will match everything.                                                                                                         |
-| `Workers`          | Number of workers to operate.                                                                                                                                                                          |
-| `accessID`         | LM API Token access ID.                                                                                                                                                                                |
-| `accessKey`        | LM API Token access key.                                                                                                                                                                               |
-| `bearerToken`      | LM API Bearer Token. Either specify `access_id` and `access_key` both or `bearer_token`. If all specified, LMv1 token(`access_id` and `access_key`) will be used for authentication with Logicmonitor. |
-| `resourceMapping`  | The mapping that defines the source of the log event to the LM resource. In this case, the `<event_key>` in the incoming event is mapped to the value of `<lm_property>`.                              |
-| `include_metadata` | When `true`, appends additional metadata to the log. default `false`.                                                                                                                                  |
-| `lm_debug`         | When `true`, logs more information to the fluent-bit console.                                                                                                                                          |
+| Property          | Description                                                                                                                                                                                            |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Name`            | Name of the input plugin.                                                                                                                                                                              |
+| `lmCompanyName`   | LogicMonitor account name with domain. For example, test.logicmonitor.com .                                                                                                                            |
+| `Match`           | A pattern to match against the tags of incoming records. For example, * will match everything.                                                                                                         |
+| `Workers`         | Number of workers to operate.                                                                                                                                                                          |
+| `accessID`        | LM API Token access ID. If not provided, omit setting the key entirely.                                                                                                                                |
+| `accessKey`       | LM API Token access key. If not provided, omit setting the key entirely.                                                                                                                               |
+| `bearerToken`     | LM API Bearer Token. Either specify `access_id` and `access_key` both or `bearer_token`. If all specified, LMv1 token(`access_id` and `access_key`) will be used for authentication with Logicmonitor. |
+| `resourceMapping` | The mapping that defines the source of the log event to the LM resource. In this case, the `<event_key>` in the incoming event is mapped to the value of `<lm_property>`.                              |
+| `includeMetadata` | When `true`, appends additional metadata to the log. default `false`.                                                                                                                                  |
+| `lmDebug`         | When `true`, logs more information to the fluent-bit console.                                                                                                                                          |
 
 
