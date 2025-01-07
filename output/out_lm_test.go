@@ -56,7 +56,7 @@ func (p *TestPlugin) Environment(ctx unsafe.Pointer, key string) string {
 		return p.token
 	case "lm_url":
 		return p.url
-	case "lm_debug":
+	case "lmDebug":
 		return p.debug
 	}
 	return "not found"

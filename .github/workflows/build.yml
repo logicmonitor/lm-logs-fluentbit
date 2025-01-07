@@ -1,0 +1,66 @@
+name: Build Fluent Bit Plugins on Push
+
+on:
+  push:
+    branches:
+      - "*"  # Trigger on push to any branch
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Build the plugin using Docker
+    - name: Build Fluent Bit Plugins
+      run: |
+        echo "Building Fluent Bit plugins..."
+        docker build -t lm-logs-fluentbit .
+        docker run --rm -v $PWD:/build lm-logs-fluentbit \
+          bash -c "mkdir -p /build/plugins && cp -r /go/src/lm/build/*.so /build/plugins/"
+
+    # Step 3: Debug to list files
+    - name: Debug List workspace files
+      run: |
+        echo "Workspace file structure:"
+        ls -R
+
+    # Step 4: Upload generated .so files as artifacts
+    - name: Upload .so files
+      uses: actions/upload-artifact@v3
+      with:
+        name: fluent-bit-plugins
+        path: plugins/**/*.so
+
+    # Optional Step 5: Commit the .so files back to the repository
+    - name: Commit and Push Generated .so Files
+      if: success() && github.ref != 'refs/heads/main'  # Skip committing to the main branch
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Checking for .so files..."
+        if ls plugins/*.so 1> /dev/null 2>&1; then
+          echo "Stashing local changes..."
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git stash
+
+          echo "Pulling latest changes..."
+          git pull --rebase origin ${{ github.ref_name }}
+
+          echo "Applying stashed changes..."
+          git stash pop
+
+          echo "Committing generated .so files..."
+          git add plugins/*.so
+          git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
+
+          echo "Pushing changes to the remote repository..."
+          git push
+        else
+          echo "No .so files found. Skipping commit."
+        fi
+
