@@ -12,7 +12,7 @@ jobs:
     steps:
     # Step 1: Checkout the repository
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Step 2: Build the plugin using Docker
     - name: Build Fluent Bit Plugins
@@ -52,7 +52,7 @@ jobs:
           git pull --rebase origin ${{ github.ref_name }}
 
           echo "Applying stashed changes..."
-          git stash pop
+          git stash pop || true
 
           echo "Committing generated .so files..."
           git add plugins/*.so
