@@ -30,5 +30,4 @@ RUN apt-get update && \
     build-essential \
     gcc-mingw-w64-x86-64 \
     clang
-RUN make
 RUN make windows
