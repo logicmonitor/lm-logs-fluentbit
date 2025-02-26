@@ -30,7 +30,7 @@ jobs:
 
     # Step 4: Upload generated .so files as artifacts
     - name: Upload .so files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: fluent-bit-plugins
         path: plugins/**/*.so
