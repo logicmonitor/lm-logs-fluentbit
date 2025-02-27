@@ -52,10 +52,10 @@ jobs:
           git pull --rebase origin ${{ github.ref_name }}
 
           echo "Applying stashed changes..."
-          git stash pop
+          git stash pop || true
 
           echo "Committing generated .so files..."
-          git add plugins/*.so
+          git add -f plugins/*.so
           git commit -m "Update: Generated .so files on ${{ github.ref_name }}"
 
           echo "Pushing changes to the remote repository..."
