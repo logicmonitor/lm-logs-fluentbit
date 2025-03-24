@@ -30,4 +30,5 @@ RUN apt-get update && \
     build-essential \
     gcc-mingw-w64-x86-64 \
     clang
+COPY --from=gobuilder /go/src/lm/*.so /go/src/lm/build/
 RUN make windows
