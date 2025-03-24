@@ -5,5 +5,7 @@
 /modules.xml
 /vcs.xml
 /workspace.xml
+/plugins/*.so
 .DS_Store
 *.xml
+*.so
