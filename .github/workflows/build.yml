@@ -37,7 +37,7 @@ jobs:
 
     # Optional Step 5: Commit the .so files back to the repository
     - name: Commit and Push Generated .so Files
-      if: success() && github.ref != 'refs/heads/master'  # Skip committing to the master branch
+      if: success()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
