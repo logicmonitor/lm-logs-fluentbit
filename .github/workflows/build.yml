@@ -2,9 +2,9 @@ name: Build Fluent Bit Plugins on Push
 
 on:
   push:
-    branches: # Trigger the workflow on push to the following branches to create .so plugin files
-      - develop
-      - master
+    branches:
+      - "*"  # Trigger on push to any branch
+
 jobs:
   build-and-update:
     runs-on: ubuntu-latest
