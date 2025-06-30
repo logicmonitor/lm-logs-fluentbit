@@ -33,6 +33,7 @@ type LogicmonitorOutput struct {
 	client      *LogicmonitorClient
 	logIngestor *logs.LMLogIngest
 	id          string
+	resourceType string
 }
 
 var (
@@ -145,7 +146,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 			break
 		}
 
-		log, err := serializeRecord(ts, C.GoString(tag), record, id)
+		log, err := serializeRecord(ts, C.GoString(tag), record, id, outputs[id].resourceType)
 		if err != nil {
 			continue
 		}
@@ -219,6 +220,7 @@ func initConfigParams(ctx unsafe.Pointer) error {
   if versionId == "" {
       versionId = "1.0.0"
   }
+  resourceType := output.FLBPluginConfigKey(ctx, "resourceType")
 
 	client := NewClient(lmCompanyName, accessID, accessKey, bearerToken, useBearerTokenforAuth, resourceMapping, includeMetadata, logSource, versionId, logger)
 	logIngestor := NewLogIngester(client)
@@ -227,12 +229,13 @@ func initConfigParams(ctx unsafe.Pointer) error {
 		client:      client,
 		logIngestor: logIngestor,
 		id:          outputId,
+		resourceType: resourceType,
 	}
 
 	return nil
 }
 
-func serializeRecord(ts interface{}, tag string, record map[interface{}]interface{}, outputId string) ([]byte, error) {
+func serializeRecord(ts interface{}, tag string, record map[interface{}]interface{}, outputId string, resourceType string) ([]byte, error) {
 	body := parseJSON(record)
 	var err error
 
@@ -247,7 +250,9 @@ func serializeRecord(ts interface{}, tag string, record map[interface{}]interfac
 
 	body["timestamp"] = formatTimestamp(ts)
 	body["fluentbit_tag"] = tag
-	body["_resource.type"] = "Fluentbit"
+	if resourceType != "" {
+    body["_resource.type"] = resourceType
+  }
 
 	serialized, err := jsoniter.Marshal(body)
 	if err != nil {
