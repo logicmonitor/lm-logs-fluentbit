@@ -2,75 +2,67 @@ name: Build Fluent Bit Plugins on Push
 
 on:
   push:
-    branches:
+    branches: # Trigger the workflow on push to the following branches to create .so plugin files
       - windows-plugin-generation
-
 jobs:
-  build-plugins:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  build-and-update:
+    runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Go (for Windows builds)
-        if: matrix.os == 'windows-latest'
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Build Plugins
+      # Step 2: Build the plugin using Docker
+      - name: Build Fluent Bit Plugins
         run: |
-          echo "Building on OS: ${{ runner.os }}"
-          
-          mkdir -p plugins
-          
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            echo "Building .so plugins using Docker..."
-            docker build -t lm-logs-fluentbit .
-            docker run --rm -v "$PWD:/build" lm-logs-fluentbit \
-              bash -c "mkdir -p /build/plugins && cp -r /go/src/lm/build/*.so /build/plugins/ || echo 'No .so plugins found'"
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            echo "Building .dll plugins using Go..."
-            if [ -f "out_lm.go" ]; then
-              go build -buildmode=c-shared -o plugins/out_lm-windows.dll out_lm.go || echo "Failed to build .dll plugin"
-            else
-              echo "Go plugin source not found: out_lm.go"
-            fi
-          fi
-        shell: bash
+          echo "Building Fluent Bit plugins..."
+          docker build -t lm-logs-fluentbit .
+          docker run --rm -v $PWD:/build lm-logs-fluentbit \
+            bash -c "mkdir -p /build/plugins && cp -r /go/src/lm/build/*.{so,dll} /build/plugins/ 2>/dev/null || echo 'No plugin files found'"
 
-      - name: List generated files
-        run: ls -R plugins || echo "No plugins directory found"
-        shell: bash
+      # Step 3: Debug to list files
+      - name: Debug List workspace files
+        run: |
+          echo "Workspace file structure:"
+          ls -R
 
-      - name: Upload plugin artifacts (.so and .dll)
+      # Step 4: Upload generated .so files as artifacts
+      - name: Upload .so files
         uses: actions/upload-artifact@v4
         with:
-          name: fluent-bit-plugins-${{ matrix.os }}
+          name: fluent-bit-plugins
           path: |
             plugins/**/*.so
             plugins/**/*.dll
+          
 
-      - name: Commit and Push Generated Plugins
+      # Optional Step 5: Commit the .so files back to the repository
+      - name: Commit and Push Generated .so Files
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
-          echo "Searching for plugins to commit..."
-          FILES=$(find plugins -type f \( -name '*.so' -o -name '*.dll' \) || true)
-          
-          if [ -n "$FILES" ]; then
+          echo "Checking for .so files..."
+          if ls plugins/*.{so,dll} 1> /dev/null 2>&1; then
+            echo "Stashing local changes..."
             git config user.name "GitHub Actions Bot"
             git config user.email "actions@github.com"
             git stash
           
-            git pull --rebase origin ${{ github.ref_name }} || true
+            echo "Pulling latest changes..."
+            git pull --rebase origin ${{ github.ref_name }}
+          
+            echo "Applying stashed changes..."
             git stash pop || true
           
-            git add -f $FILES
-            gi
+            echo "Committing generated .so files..."
+            git add -f plugins/*.so plugins/*.dll
+            git commit -m "Update: Generated plugin files (.so/.dll) on ${{ github.ref_name }}"
+          
+            echo "Pushing changes to the remote repository..."
+            git push
+          else
+            echo "No .so files found. Skipping commit."
+          fi
+
