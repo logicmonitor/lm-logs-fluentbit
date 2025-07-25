@@ -59,6 +59,7 @@ jobs:
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           echo "Searching for plugins to commit..."
           FILES=$(find plugins -type f \( -name '*.so' -o -name '*.dll' \) || true)
