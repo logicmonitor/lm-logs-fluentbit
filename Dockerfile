@@ -1,6 +1,6 @@
 FROM gcc:latest
 
-FROM golang:1.21.12 as gobuilder
+FROM golang:1.23.0 as gobuilder
 ENV GOOS=linux\
     GOARCH=amd64
 RUN mkdir /go/src/lm
@@ -18,7 +18,7 @@ RUN make linux-arm
 RUN chmod -R 444 /go/src/lm/build/out_lm.so
 
 # Add Windows build stage
-FROM golang:1.21.12 as gobuilder-windows
+FROM golang:1.23.0 as gobuilder-windows
 ENV GOOS=windows\
     GOARCH=amd64
 RUN mkdir /go/src/lm
