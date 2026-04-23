@@ -8,6 +8,7 @@ import (
 	"github.com/fluent/fluent-bit-go/output"
 	"context"
 	"encoding/json"
+	"strings"
 	"github.com/logicmonitor/lm-data-sdk-go/api/logs"
 	"github.com/logicmonitor/lm-data-sdk-go/model"
 	"github.com/logicmonitor/lm-data-sdk-go/utils"
@@ -157,6 +158,10 @@ func (logicmonitorClient *LogicmonitorClient) Send(log []byte, logIngestor *logs
 	} else {
 		logger.Debug(fmt.Sprintf("Message field found: %s", message))
 	}
+
+	// Trim whitespace to handle empty lines on Windows (CRLF) and Linux (LF)
+	// This removes carriage returns (\r), newlines (\n), spaces, tabs, etc.
+	message = strings.TrimSpace(message)
 
   //Send logs only if message is not empty
 	if message != "" {
